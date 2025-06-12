@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Desafío del IVA con Cartas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .vidas, .tiempo {
+      font-size: 20px;
+      margin: 10px;
+    }
+    #vidas{
+        color: red;
+    }
+    #jugador {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    #tablero {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .carta {
+      background-color: #3498db;
+      color: white;
+      padding: 30px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s;
+    }
+    .carta:hover {
+      background-color: #2980b9;
+    }
+    .pregunta, .mensaje {
+      margin: 20px 0;
+      font-size: 20px;
+    }
+    .respuestas {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      margin: auto;
+    }
+    .respuesta {
+      background-color: #1abc9c;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    .respuesta:disabled {
+      background-color: #bdc3c7;
+      cursor: default;
+    }
+    #reiniciar {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #e67e22;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      display: none;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .close {
+      position: absolute;
+      right: 20px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Desafío del IVA</h1>
+  <div id="inicio">
+    <label for="nombre">Nombre del jugador:</label>
+    <input type="text" id="nombre" required />
+    <button onclick="iniciarJuego()">Iniciar juego</button>
+  </div>
+  <div id="jugador"></div>
+  <div class="vidas" id="vidas">♥♥♥</div>
+  <div class="tiempo" id="tiempo">Tiempo: 0m 0s</div>
+  <div id="tablero"></div>
+  <div class="pregunta" id="pregunta"></div>
+  <div class="respuestas" id="respuestas"></div>
+  <div class="mensaje" id="mensaje"></div>
+  <button id="reiniciar">Reiniciar</button>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div id="preguntaModal"></div>
+      <div id="respuestasModal"></div>
+    </div>
+  </div>
+
+  <div id="ayuda" style="position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer;" title="¿Qué es el IVA?">
+  ❓
+</div>
+
+<div id="tutorialModal" class="modal">
+  <div class="modal-content">
+    <span id="cerrarTutorial" class="close">&times;</span>
+    <h2>¿Qué es el IVA?</h2>
+    <p>El IVA (Impuesto al Valor Agregado) es un impuesto que se aplica a la mayoría de productos y servicios. En Colombia, suele ser del 19%.</p>
+    <p>Para calcularlo: multiplica el precio base por 0.19. Ejemplo: $100.000 x 0.19 = $19.000.</p>
+  </div>
+</div>
+
+<button onclick="mostrarRanking()">Ver Ranking</button>
+
+<div id="modalRanking" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('modalRanking').style.display='none'">&times;</span>
+    <h3>🏆 Ranking</h3>
+    <table id="tablaRanking">
+      <thead>
+        <tr><th>Nombre</th><th>Tiempo</th><th>Intentos</th><th>Fecha</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const iconoAyuda = document.getElementById("ayuda");
+const tutorialModal = document.getElementById("tutorialModal");
+const cerrarTutorial = document.getElementById("cerrarTutorial");
+iconoAyuda.onclick = () => tutorialModal.style.display = "flex";
+cerrarTutorial.onclick = () => tutorialModal.style.display = "none";
+</script>
+
+<script>
+const preguntasBase = [
+  { texto: "¿Cuál es el precio final de una chaqueta de $120.000 con rebajas sucesivas de 50% y 30%?", opciones: ["$60.000", "$42.000", "$36.000"], respuesta: "$42.000" },
+  { texto: "Un televisor cuesta $2.599.500 más IVA del 19%. ¿Cuál es su precio final?", opciones: ["$2.800.000", "$3.093.405", "$3.100.000"], respuesta: "$3.093.405" },
+  { texto: "Un equipo de cómputo vale $7.050.000 IVA incluido. ¿Cuál es su precio si se paga de contado con 18% de descuento?", opciones: ["$5.780.999", "$6.000.000", "$6.500.000"], respuesta: "$5.780.999" },
+  { texto: "Un celular Xiaomi cuesta $3.250.000 IVA incluido. ¿Cuál era el valor base antes del descuento del 15% aplicado antes del IVA?", opciones: ["$3.213.050", "$3.000.000", "$2.750.000"], respuesta: "$3.213.050" },
+  { texto: "Una empresa contrató diseño por $800.000 + IVA del 19%. ¿Cuánto pagó en total?", opciones: ["$824.268", "$152.000", "$952.000"], respuesta: "$952.000" },
+  { texto: "Leonardo compró audífonos por $476.000 con IVA incluido del 19%. ¿Cuál es el valor del IVA?", opciones: ["$56.640", "$400.000", "$76.000"], respuesta: "$76.000" },
+  { texto: "Un dron cuesta $3.250.000 IVA incluido. Se paga de contado con 3% de descuento. ¿Cuál es el precio final?", opciones: ["$3.152.500", "$2.731.092", "$2.750.000"], respuesta: "$3.152.500" },
+  { texto: "Una moto de $12.350.000 IVA incluido tiene rebaja del 9% y luego 10%. ¿Precio final?", opciones: ["$11.238.500", "$10.115.007", "$10.114.650"], respuesta: "$10.114.650" }
+];
+
+let preguntas = [];
+let vidas = 3;
+let tiempo = 0;
+let intentosJugador = 1;
+let temporizador;
+let nombreJugador = "";
+
+const tablero = document.getElementById('tablero');
+const vidasDiv = document.getElementById('vidas');
+const tiempoDiv = document.getElementById('tiempo');
+const jugadorDiv = document.getElementById('jugador');
+const mensajeDiv = document.getElementById('mensaje');
+const reiniciarBtn = document.getElementById('reiniciar');
+
+reiniciarBtn.onclick = () => {
+  intentosJugador++;
+  location.reload();
+};
+
+
+function obtenerIDJugador() {
+  let id = localStorage.getItem("idJugador");
+  if (!id) {
+    id = "jugador_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("idJugador", id);
+  }
+  return id;
+}
+
+const idJugador = obtenerIDJugador();
+
+
+function iniciarJuego() {
+  const inputNombre = document.getElementById('nombre');
+  if (!inputNombre.value.trim()) return alert("Por favor ingresa tu nombre");
+  nombreJugador = inputNombre.value.trim();
+  document.getElementById("inicio").style.display = "none";
+  jugadorDiv.textContent = `Jugador: ${nombreJugador}`;
+  preguntas = mezclarArray([...preguntasBase]);
+  vidas = 3;
+  actualizarVidas();
+  tiempo = 0;
+  tiempoDiv.textContent = `Tiempo: 0m 0s`;
+  mostrarCartas();
+  temporizador = setInterval(() => {
+    tiempo++;
+    const min = Math.floor(tiempo / 60);
+    const seg = tiempo % 60;
+    tiempoDiv.textContent = `Tiempo: ${min}m ${seg}s`;
+  }, 1000);
+}
+
+function mezclarArray(arr) {
+  return arr.sort(() => Math.random() - 0.3);
+}
+
+function mostrarCartas() {
+  tablero.innerHTML = "";
+  preguntas.forEach((p, i) => {
+    const carta = document.createElement('div');
+    carta.className = 'carta';
+    carta.textContent = `Carta ${i + 1}`;
+    carta.onclick = () => mostrarPreguntaModal(p, carta);
+    tablero.appendChild(carta);
+  });
+}
+
+function actualizarVidas() {
+  vidasDiv.textContent = '♥'.repeat(vidas);
+  if (vidas === 0) finalizarJuego(false);
+}
+
+function finalizarJuego(ganado) {
+  clearInterval(temporizador);
+  const tiempoTotal = `${Math.floor(tiempo / 60)}m ${tiempo % 60}s`;
+  const intentos = 4 - vidas;
+
+  if (ganado) {
+    mensajeDiv.innerHTML = `🎉 ¡Has ganado, ${nombreJugador}! Tiempo: ${tiempoTotal}`;
+  } else {
+    mensajeDiv.textContent = `💀 ¡Has perdido, ${nombreJugador}!`;
+  }
+
+  document.getElementById('pregunta').textContent = "Fin del juego";
+  document.getElementById('respuestas').innerHTML = "";
+  reiniciarBtn.style.display = "inline-block";
+
+ const datos = {
+  id: idJugador,
+  nombre: nombreJugador,
+  tiempo: tiempoTotal,
+  intentos: intentosJugador
+};
+
+const formData = new FormData();
+formData.append("id", idJugador);
+formData.append("nombre", nombreJugador);
+formData.append("tiempo", tiempoTotal);
+formData.append("intentos", intentosJugador);
+
+fetch('https://script.google.com/macros/s/AKfycbzcd9weHsFTVKklJKZYLqQ-FluVS9Cmm0FbXieQ0TqTV0h2nlttEsF4fsPVNup8-wh-IQ/exec', {
+  method: 'POST',
+  body: JSON.stringify(datos)
+})
+  .then(() => console.log("Datos enviados al ranking"))
+  .catch(err => console.error("Error al enviar datos:", err));
+
+}
+
+function mostrarPreguntaModal(pregunta, cartaElemento) {
+  document.getElementById("ayuda").style.display = "none";
+  const modal = document.getElementById("modal");
+  const preguntaModal = document.getElementById("preguntaModal");
+  const respuestasModal = document.getElementById("respuestasModal");
+
+  preguntaModal.textContent = pregunta.texto;
+  respuestasModal.innerHTML = "";
+
+  const opciones = mezclarArray([...pregunta.opciones]);
+  opciones.forEach(opcion => {
+    const btn = document.createElement("button");
+    btn.textContent = opcion;
+    btn.className = "respuesta";
+    btn.onclick = () => verificarRespuestaModal(btn, opcion, pregunta.respuesta, cartaElemento);
+    respuestasModal.appendChild(btn);
+  });
+
+  modal.style.display = "flex";
+}
+
+function verificarRespuestaModal(boton, seleccion, correcta, cartaElemento) {
+  const modal = document.getElementById("modal");
+  if (seleccion === correcta) {
+    boton.style.backgroundColor = "green";
+    mensajeDiv.textContent = "✅ ¡Correcto!";
+    cartaElemento.remove();
+    setTimeout(() => {
+      modal.style.display = "none";
+      mensajeDiv.textContent = "";
+      if (tablero.children.length === 0) finalizarJuego(true);
+    }, 1000);
+  } else {
+    boton.style.backgroundColor = "darkred";
+    mensajeDiv.textContent = "❌ ¡Incorrecto!";
+    vidas--;
+    actualizarVidas();
+    if (vidas === 0) modal.style.display = "none";
+  }
+}
+
+function mostrarRanking() {
+  fetch('https://script.google.com/macros/s/AKfycbzcd9weHsFTVKklJKZYLqQ-FluVS9Cmm0FbXieQ0TqTV0h2nlttEsF4fsPVNup8-wh-IQ/exec')
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#tablaRanking tbody");
+      tbody.innerHTML = "";
+      data.forEach(fila => {
+        const tr = document.createElement("tr");
+        fila.forEach(celda => {
+          const td = document.createElement("td");
+          td.textContent = celda;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      document.getElementById("modalRanking").style.display = "flex";
+    })
+    .catch(err => console.error("Error al obtener ranking:", err));
+document.getElementById("modalRanking").style.display = "flex";
+
+}
+
+
+
+</script>
+</body>
+</html>
