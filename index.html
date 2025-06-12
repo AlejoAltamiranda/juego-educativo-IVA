@@ -11,6 +11,49 @@
       text-align: center;
       padding: 20px;
     }
+    #inicio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  gap: 15px;
+  background-color: #f4f4f4;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 40px auto;
+}
+
+#inicio input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.2s;
+}
+
+#inicio input[type="text"]:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 5px #007BFF44;
+}
+
+#inicio button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+#inicio button:hover
+
     h1 {
       color: #2c3e50;
     }
@@ -20,6 +63,7 @@
     }
     #vidas{
         color: red;
+        font-size: 4rem;
     }
     #jugador {
       font-size: 18px;
@@ -79,6 +123,7 @@
       border-radius: 5px;
       display: none;
       cursor: pointer;
+      
     }
     .modal {
       display: none;
@@ -107,10 +152,21 @@
       font-weight: bold;
       cursor: pointer;
     }
+   .mostrarRanking{
+          padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 40%;
+    }
   </style>
 </head>
 <body>
-  <h1>Desafío del IVA</h1>
+  <h1>Desafío de IVA e Descuentos</h1>
   <div id="inicio">
     <label for="nombre">Nombre del jugador:</label>
     <input type="text" id="nombre" required />
@@ -145,7 +201,7 @@
   </div>
 </div>
 
-<button onclick="mostrarRanking()">Ver Ranking</button>
+<button class="mostrarRanking" onclick="mostrarRanking()">Ver Ranking</button>
 
 <div id="modalRanking" class="modal">
   <div class="modal-content">
@@ -257,10 +313,12 @@ function finalizarJuego(ganado) {
   const tiempoTotal = `${Math.floor(tiempo / 60)}m ${tiempo % 60}s`;
   const intentos = 4 - vidas;
 
+  tablero.innerHTML = "";
+
   if (ganado) {
     mensajeDiv.innerHTML = `🎉 ¡Has ganado, ${nombreJugador}! Tiempo: ${tiempoTotal}`;
   } else {
-    mensajeDiv.textContent = `💀 ¡Has perdido, ${nombreJugador}!`;
+    mensajeDiv.innerHTML = `😢 ¡Has perdido, ${nombreJugador}!`;
   }
 
   document.getElementById('pregunta').textContent = "Fin del juego";
