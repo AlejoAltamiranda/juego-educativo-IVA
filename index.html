@@ -396,12 +396,59 @@ cerrarTutorial.onclick = () => tutorialModal.style.display = "none";
 </script>
 
 <script>
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (
+    e.key === 'F12' ||                          // F12
+    (e.ctrlKey && e.shiftKey && e.key === 'I') || // Ctrl+Shift+I
+    (e.ctrlKey && e.shiftKey && e.key === 'C') || // Ctrl+Shift+C
+    (e.ctrlKey && e.shiftKey && e.key === 'J') || // Ctrl+Shift+J
+    (e.ctrlKey && e.key === 'U')                // Ctrl+U
+  ) {
+    e.preventDefault();
+    alert("🔒 Esta acción está deshabilitada.");
+  }
+});
+
+(function() {
+  const bloquearDevTools = () => {
+    setInterval(() => {
+      const start = new Date();
+      debugger;
+      if (new Date() - start > 100) {
+        document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>⚠️ Inspección bloqueada</h1>";
+      }
+    }, 1000);
+  };
+
+  const bloquearClicDerechoYTeclas = () => {
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    document.addEventListener("keydown", e => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')
+      ) {
+        e.preventDefault();
+        alert("🚫 Acción bloqueada por seguridad");
+      }
+    });
+  };
+
+  bloquearDevTools();
+  bloquearClicDerechoYTeclas();
+})();
+</script>
+
+
+<script>
 const preguntasBase = [
   { texto: "¿Cuál es el precio final de una chaqueta de $120.000 con rebajas sucesivas de 50% y 30%?", opciones: ["$60.000", "$42.000", "$36.000"], respuesta: "$42.000" },
   { texto: "Un televisor cuesta $2.599.500 más IVA del 19%. ¿Cuál es su precio final?", opciones: ["$2.800.000", "$3.093.405", "$3.100.000"], respuesta: "$3.093.405" },
   { texto: "Un equipo de cómputo vale $7.050.000 IVA incluido. ¿Cuál es su precio si se paga de contado con 18% de descuento?", opciones: ["$5.780.999", "$6.000.000", "$6.500.000"], respuesta: "$5.780.999" },
   { texto: "Un celular Xiaomi cuesta $3.250.000 IVA incluido. ¿Cuál era el valor base antes del descuento del 15% aplicado antes del IVA?", opciones: ["$3.213.050", "$3.000.000", "$2.750.000"], respuesta: "$3.213.050" },
-  { texto: "Una empresa de carpintería Contrato a un diseñador gráfico para crear el logo de la empresa. si el diseño del logo valió $800.000 + IVA del 19%. ¿Cuánto pagó en total la empresa de carpintería por el diseño del logo?", opciones: ["$824.268", "$152.000", "$952.000"], respuesta: "$952.000" },
+  { texto: "Una empresa contrató diseño por $800.000 + IVA dUna empresa de carpintería Contrato a un diseñador gráfico para crear el logo de la empresa. si el diseño del logo valió $800.000 + IVA del 19%. ¿Cuánto pagó en total la empresa de carpintería por el diseño del logo?", opciones: ["$824.268", "$152.000", "$952.000"], respuesta: "$952.000" },
   { texto: "leonardo Compro unos audífonos inalámbricos en una tienda por $476.000 con IVA incluido del 19%. ¿Cuál es el valor del IVA de los audífonos?", opciones: ["$56.640", "$400.000", "$76.000"], respuesta: "$76.000" },
   { texto: "Un nuevo modelo de dron cuesta $3.250.000 IVA incluido del 19%. si se paga de contado se ofrece un descuento del 3%. ¿Cuál es el valor final del producto teniendo en cuenta que se pagó de contado? ", opciones: ["$3.152.500", "$2.731.092", "$2.750.000"], respuesta: "$3.152.500" },
   { texto: "El precio de una motocicleta cuyo precio base es $12.350.000 IVA incluido (19%), se rebaja un 9%. Sin embargo, como sigue sin venderse, se aplica otra rebaja del 10% sobre el precio ya rebajado. ¿Cuál es el precio final de la motocicleta?", opciones: ["$11.238.500", "$10.115.007", "$10.114.650"], respuesta: "$10.114.650" }
@@ -581,7 +628,6 @@ function mostrarRanking() {
 document.getElementById("modalRanking").style.display = "flex";
 
 }
-
 
 
 </script>
