@@ -163,18 +163,84 @@
     transition: background-color 0.2s ease;
     width: 40%;
     }
+    .modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-contenido {
+  background: #fff;
+  width: 90%;
+  max-width: 500px;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+  transition: transform 0.3s ease;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cerrar {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+}
+
+.pagina-tutorial {
+  display: none;
+}
+
+.paginacion {
+  margin-top: 25px;
+}
+
+.paginacion button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  margin: 0 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.paginacion button:hover {
+  background-color: #0056b3;
+}
+
   </style>
 </head>
 <body>
-  <h1>Desafío de IVA e Descuentos</h1>
+  <h1>Desafío de IVA & Descuentos</h1>
   <div id="inicio">
     <label for="nombre">Nombre del jugador:</label>
     <input type="text" id="nombre" required />
     <button onclick="iniciarJuego()">Iniciar juego</button>
   </div>
   <div id="jugador"></div>
+  <div id="hudJuego" style="display: none;">
   <div class="vidas" id="vidas">♥♥♥</div>
   <div class="tiempo" id="tiempo">Tiempo: 0m 0s</div>
+  </div>
   <div id="tablero"></div>
   <div class="pregunta" id="pregunta"></div>
   <div class="respuestas" id="respuestas"></div>
@@ -193,13 +259,118 @@
 </div>
 
 <div id="tutorialModal" class="modal">
-  <div class="modal-content">
-    <span id="cerrarTutorial" class="close">&times;</span>
-    <h2>¿Qué es el IVA?</h2>
-    <p>El IVA (Impuesto al Valor Agregado) es un impuesto que se aplica a la mayoría de productos y servicios. En Colombia, suele ser del 19%.</p>
-    <p>Para calcularlo: multiplica el precio base por 0.19. Ejemplo: $100.000 x 0.19 = $19.000.</p>
+  <div class="modal-contenido">
+    <span id="cerrarTutorial" class="cerrar">&times;</span>
+
+    <div class="pagina-tutorial" style="display: block;">
+      <h2>📘 ¿Cómo se juega?</h2>
+      <p>¡Bienvenido al juego educativo sobre el IVA & Descuentos!</p>
+    </div>
+
+    <div class="pagina-tutorial" style="display: none;">
+      <h3>🎯 Objetivo del juego</h3>
+      <p>Responde correctamente todas las preguntas escondidas detrás de las cartas para ganar.</p>
+    </div>
+
+    <div class="pagina-tutorial" style="display: none;">
+      <h3>🕹️ ¿Cómo jugar?</h3>
+      <ul>
+        <li>Ingresa tu nombre para comenzar.</li>
+        <li>Haz clic en las cartas para responder preguntas.</li>
+        <li>Escoge la respuesta correcta. Cada error cuesta una vida.</li>
+      </ul>
+    </div>
+
+    <div class="pagina-tutorial" style="display: none;">
+      <h3>❤️ Vidas y ⏱️ Tiempo</h3>
+      <p>Tienes 3 vidas. Cada error resta una. El tiempo y tus intentos se registran en el ranking.</p>
+    </div>
+
+    <div class="pagina-tutorial" style="display: none;">
+      <h3>🏆 Ranking</h3>
+      <p>Al terminar, tus datos se guardarán en una tabla de posiciones con tu nombre, tiempo e intentos.</p>
+      <p><strong>¡Buena suerte!</strong> 🎉</p>
+    </div>
+
+    <div class="pagina-tutorial">
+  <h3>📊 Cálculos de IVA y Descuentos</h3>
+
+  <p><strong>🧮 1. Producto + IVA (19%)</strong></p>
+  <ul style="text-align: left;">
+    <li><strong>Total = Valor Base × 1.19</strong></li>
+    <li><em>Ejemplo:</em> $100.000 × 1.19 = <strong>$119.000</strong></li>
+     <li><strong>IVA = $19.000</strong></li>
+  </ul>
+
+  <p><strong>🧮 2. Producto con IVA incluido</strong></p>
+  <ul style="text-align: left;">
+    <li><strong>Valor Base = Total ÷ 1.19</strong></li>
+    <li><strong>IVA = Total - Valor Base</strong></li>
+    <li><em>Ejemplo:</em> $119.000 ÷ 1.19 = <strong>$100.000</strong></li>
+    <li><strong>BASE = $100.000</strong></li>
+    <li><strong>IVA = $19.000</strong></li>
+
+    
+  </ul>
+
+  <p><strong>🏷️ 3. Descuentos</strong></p>
+  <ul style="text-align: left;">
+    <li>Descuento es aplicado al valor base, luego se suma el IVA si es + IVA y si tiene IVA INCLUIDO entonces se saca la base.</li>
+    <li>Valor final = Precio × (1 - Descuento) × (1 - Descuento) x IVA</li>
+    <li><em>Ejemplo:</em> $100.000 + iva 19% con 30% y 10% descuento → $100.000 × (1 - 0.30) $70.000 (1 - 0.10) = $63.000 x 1.19 = <strong>$74.970</strong></li>
+  </ul>
+
+  <!-- <p><strong>🛒 4. Descuentos antes del IVA</strong></p>
+  <ul style="text-align: left;">
+    <li>Descuento aplicado al valor base, luego se suma el IVA.</li>
+    <li><strong>Valor final = (Valor Base × (1 - Desc)) × 1.19</strong></li>
+    <li><em>Ejemplo:</em> $200.000 con 15% → $200.000 × 0.85 × 1.19 = <strong>$202.300</strong></li>
+  </ul> -->
+</div>
+
+
+    <div class="paginacion">
+      <button id="anteriorTutorial">⬅️ Anterior</button>
+      <button id="siguienteTutorial">Siguiente ➡️</button>
+    </div>
   </div>
 </div>
+
+<script>
+let paginaActual = 0;
+const paginas = document.querySelectorAll(".pagina-tutorial");
+const btnAnterior = document.getElementById("anteriorTutorial");
+const btnSiguiente = document.getElementById("siguienteTutorial");
+
+function mostrarPagina(index) {
+  paginas.forEach((p, i) => {
+    p.style.display = i === index ? "block" : "none";
+  });
+  btnAnterior.style.display = index === 0 ? "none" : "inline-block";
+  btnSiguiente.textContent = index === paginas.length - 1 ? "Finalizar" : "Siguiente ➡️";
+}
+
+btnAnterior.onclick = () => {
+  if (paginaActual > 0) {
+    paginaActual--;
+    mostrarPagina(paginaActual);
+  }
+};
+
+btnSiguiente.onclick = () => {
+  if (paginaActual < paginas.length - 1) {
+    paginaActual++;
+    mostrarPagina(paginaActual);
+  } else {
+    document.getElementById("tutorialModal").style.display = "none";
+    paginaActual = 0;
+    mostrarPagina(paginaActual);
+  }
+};
+
+mostrarPagina(paginaActual);
+</script>
+
 
 <button class="mostrarRanking" onclick="mostrarRanking()">Ver Ranking</button>
 
@@ -230,10 +401,10 @@ const preguntasBase = [
   { texto: "Un televisor cuesta $2.599.500 más IVA del 19%. ¿Cuál es su precio final?", opciones: ["$2.800.000", "$3.093.405", "$3.100.000"], respuesta: "$3.093.405" },
   { texto: "Un equipo de cómputo vale $7.050.000 IVA incluido. ¿Cuál es su precio si se paga de contado con 18% de descuento?", opciones: ["$5.780.999", "$6.000.000", "$6.500.000"], respuesta: "$5.780.999" },
   { texto: "Un celular Xiaomi cuesta $3.250.000 IVA incluido. ¿Cuál era el valor base antes del descuento del 15% aplicado antes del IVA?", opciones: ["$3.213.050", "$3.000.000", "$2.750.000"], respuesta: "$3.213.050" },
-  { texto: "Una empresa contrató diseño por $800.000 + IVA del 19%. ¿Cuánto pagó en total?", opciones: ["$824.268", "$152.000", "$952.000"], respuesta: "$952.000" },
-  { texto: "Leonardo compró audífonos por $476.000 con IVA incluido del 19%. ¿Cuál es el valor del IVA?", opciones: ["$56.640", "$400.000", "$76.000"], respuesta: "$76.000" },
-  { texto: "Un dron cuesta $3.250.000 IVA incluido. Se paga de contado con 3% de descuento. ¿Cuál es el precio final?", opciones: ["$3.152.500", "$2.731.092", "$2.750.000"], respuesta: "$3.152.500" },
-  { texto: "Una moto de $12.350.000 IVA incluido tiene rebaja del 9% y luego 10%. ¿Precio final?", opciones: ["$11.238.500", "$10.115.007", "$10.114.650"], respuesta: "$10.114.650" }
+  { texto: "Una empresa contrató diseño por $800.000 + IVA dUna empresa de carpintería Contrato a un diseñador gráfico para crear el logo de la empresa. si el diseño del logo valió $800.000 + IVA del 19%. ¿Cuánto pagó en total la empresa de carpintería por el diseño del logo?", opciones: ["$824.268", "$152.000", "$952.000"], respuesta: "$952.000" },
+  { texto: "leonardo Compro unos audífonos inalámbricos en una tienda por $476.000 con IVA incluido del 19%. ¿Cuál es el valor del IVA de los audífonos?", opciones: ["$56.640", "$400.000", "$76.000"], respuesta: "$76.000" },
+  { texto: "Un nuevo modelo de dron cuesta $3.250.000 IVA incluido del 19%. si se paga de contado se ofrece un descuento del 3%. ¿Cuál es el valor final del producto teniendo en cuenta que se pagó de contado? ", opciones: ["$3.152.500", "$2.731.092", "$2.750.000"], respuesta: "$3.152.500" },
+  { texto: "El precio de una motocicleta cuyo precio base es $12.350.000 IVA incluido (19%), se rebaja un 9%. Sin embargo, como sigue sin venderse, se aplica otra rebaja del 10% sobre el precio ya rebajado. ¿Cuál es el precio final de la motocicleta?", opciones: ["$11.238.500", "$10.115.007", "$10.114.650"], respuesta: "$10.114.650" }
 ];
 
 let preguntas = [];
@@ -273,6 +444,7 @@ function iniciarJuego() {
   if (!inputNombre.value.trim()) return alert("Por favor ingresa tu nombre");
   nombreJugador = inputNombre.value.trim();
   document.getElementById("inicio").style.display = "none";
+  document.getElementById("hudJuego").style.display = "block";
   jugadorDiv.textContent = `Jugador: ${nombreJugador}`;
   preguntas = mezclarArray([...preguntasBase]);
   vidas = 3;
